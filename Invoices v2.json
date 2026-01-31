@@ -1,0 +1,1061 @@
+{
+  "name": "My workflow Invoices v2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2896,
+        -400
+      ],
+      "id": "bef14583-3336-4bfe-be54-c1f6406b3733",
+      "name": "Telegram Trigger",
+      "webhookId": "c8630da9-5e7e-4032-8bc4-e53798a8c968",
+      "credentials": {
+        "telegramApi": {
+          "id": "1Wy1DmjVeXzEEvvo",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f48708b6-abc4-436a-805e-80e53a09918a",
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1d6b05eb-191a-4085-813a-c405322b5dd9",
+                    "leftValue": "={{ $json.message.document.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "10b62b3a-c3f0-49c7-a437-b8ed6becde09",
+                    "leftValue": "={{ $json.message.photo[3].file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "jpg"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -2560,
+        -416
+      ],
+      "id": "a7a37358-7a67-4b88-8340-daeaedab0f5f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }} or {{ $json.message.text }} or {{ $json.content }} and {{ $json.driveLink }}",
+        "options": {
+          "systemMessage": "=You are my purchase-logging assistant.One document corresponds to the registration of a single row in the Google Sheet.\nIf you receive multiple files or entries in one task, treat each file or entry as a separate document and output each result separately.\nEach result must be written to the next available empty row in the target Google Sheet.\nNever overwrite or replace data in already filled rows.\n\nSTEP 1 — Classify the entry  \n• Scan the input text and decide whether it describes **an invoice** (keywords such as “invoice”, “invoice number”, “inv-no”, etc.) or a **regular purchase**.  \n• Tag the record with one of two sheet names:  \n    • \"Invoices\"   – for invoices only, skip Shopping file registration\n    • \"Shopping\"   – for ordinary purchases\n\nSTEP 2 — Extract the required fields  \n\nA. If the entry is an **invoice**, return exactly the following 5 fields:  \n    • Invoice Date       → ISO format YYYY-MM-DD  \n    • Invoice Number  \n    • Supplier           → company or person issuing the invoice  \n    • Invoice Amount     → numeric Gross Amount value followed by currency symbol (e.g. `1234.56 €`, `850 PLN`, `199.99 $`)  \n    • Doc Link           → copy the field called `driveLink` from the current JSON input\n\nB. If the entry is a **regular purchase**, return exactly the following 4 fields:  \n    • Date               → ISO format YYYY-MM-DD (use {{$today}} if no date is found)  \n    • Shop               → place or merchant name  \n    • Items              → comma-separated list of what was bought  \n    • Cost               → numeric value followed by currency symbol (e.g. `199.99 $`)\n\nFormatting rules for all monetary fields:  \n• Use no thousand separators.  \n• Use a dot `.` as the decimal separator.  \n• Use a single space between the amount and the currency symbol.  \n• Do **not** include currency codes like EUR, USD, etc. — only the symbol.\n\nThe current date is {{$today}}.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1168,
+        -464
+      ],
+      "id": "9a2ad15d-a897-41bf-8c3e-3e2836817d67",
+      "name": "AI Agent",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1200,
+        -256
+      ],
+      "id": "e7cdda67-9175-4708-ba79-90573f66c342",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "3a2N71KInPe58jcz",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Edit Fields1').item.json.chatID }}",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -624,
+        -624
+      ],
+      "id": "83677b02-a404-4803-9c40-0516a6bd90f6",
+      "name": "Telegram",
+      "webhookId": "69336d3a-1814-43e9-a5f4-4b46982989e7",
+      "credentials": {
+        "telegramApi": {
+          "id": "1Wy1DmjVeXzEEvvo",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2160,
+        -288
+      ],
+      "id": "4ef33f02-c17d-4270-abf2-58d73fd3d26f",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "3a2N71KInPe58jcz",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -2128,
+        -80
+      ],
+      "id": "392d2b26-2a79-40f1-b12e-c09fbde4c920",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.document.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2368,
+        -80
+      ],
+      "id": "eeae5c06-6dfa-43b2-b3a7-891fc1e7f3ae",
+      "name": "PDF",
+      "webhookId": "3770fe9e-161c-4f52-9726-6584468ea5b1",
+      "credentials": {
+        "telegramApi": {
+          "id": "1Wy1DmjVeXzEEvvo",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2368,
+        -288
+      ],
+      "id": "fb10bdfe-1f1d-4172-b9c5-30519919e635",
+      "name": "VOICE",
+      "webhookId": "c3337d85-2e56-4b97-a8c7-f152e71ae6fb",
+      "credentials": {
+        "telegramApi": {
+          "id": "1Wy1DmjVeXzEEvvo",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[3].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2368,
+        352
+      ],
+      "id": "5448c78a-e6a4-41dc-831e-643fa6d2b13b",
+      "name": "JPG",
+      "webhookId": "2bc87e66-7c63-4787-87b5-1a6ef59d54ea",
+      "credentials": {
+        "telegramApi": {
+          "id": "1Wy1DmjVeXzEEvvo",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -2128,
+        352
+      ],
+      "id": "6e05bdce-7f6f-4ecd-af33-e6d851f2ab6e",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1968,
+        352
+      ],
+      "id": "584a4070-6ce1-4846-9b25-fb4588c75566",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "You are processing a photograph (JPG or PNG) of a paper invoice.  \n\n1. Carefully read any printed or handwritten text on the image.  \n2. Extract these four fields:  \n   • Invoice Date (ISO 8601 format YYYY-MM-DD)  \n   • Invoice Number  \n   • Supplier Name (the company or person issuing the invoice)  \n   • Gross Amount (numeric value with a dot as the decimal separator, no currency symbol)  \n\nReturn your output **as a single-row JSON object** with exactly these keys, in this order:\n\n{\n  \"Inovoice date\": \"...\",\n  \"Invoice number\": \"...\",\n  \"supplier\": \"...\",\n  \"gross Amoung with currency\": \"...\"\n}\n\nDo not include any additional keys, commentary, or formatting. If a field is missing or unreadable, return an empty string for that key.\n",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1760,
+        352
+      ],
+      "id": "396c1b0d-d5af-4630-8241-fa108caecf40",
+      "name": "OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "3a2N71KInPe58jcz",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/13Bqt2jailcZzMQpfjQoPa5WYrbE0EEW7O4mhOGpcto4/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13Bqt2jailcZzMQpfjQoPa5WYrbE0EEW7O4mhOGpcto4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Invoice Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Invoice_Date', ``, 'string') }}",
+            "Invoice Number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Invoice_Number', ``, 'string') }}",
+            "Supplier": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Supplier', ``, 'string') }}",
+            "Invoice Amount": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Invoice_Amount', ``, 'string') }}",
+            "Doc Link": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Doc_Link', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Invoice Date",
+              "displayName": "Invoice Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice Number",
+              "displayName": "Invoice Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Supplier",
+              "displayName": "Supplier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice Amount",
+              "displayName": "Invoice Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Doc Link",
+              "displayName": "Doc Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        -896,
+        -240
+      ],
+      "id": "8959ed62-e606-4ac4-ab39-4d401ac8555f",
+      "name": "Inovices",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LMvHGW0mVTEjg5UC",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1KfT05BX64tY-GsSjtJ2CQW1s4A27piRLFFCRo6UpOnk/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Arkusz1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KfT05BX64tY-GsSjtJ2CQW1s4A27piRLFFCRo6UpOnk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Date', ``, 'string') }}",
+            "Shop": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Shop', ``, 'string') }}",
+            "Items": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Items', ``, 'string') }}",
+            "Cost": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Cost', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Shop",
+              "displayName": "Shop",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Items",
+              "displayName": "Items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cost",
+              "displayName": "Cost",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        -1056,
+        -240
+      ],
+      "id": "02430380-201b-4dce-af33-d5ff43affd17",
+      "name": "Shooping",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LMvHGW0mVTEjg5UC",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1r2n8xw22ivy93xiSPgcS6U9b1H8GuLeP",
+          "mode": "list",
+          "cachedResultName": "Invoices",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1r2n8xw22ivy93xiSPgcS6U9b1H8GuLeP"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2128,
+        112
+      ],
+      "id": "353cddde-7a9d-4996-aba5-0ef86a6356df",
+      "name": "Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "CP2jFgI7Unfhpx1n",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1760,
+        -64
+      ],
+      "id": "a8c9f615-9cca-4bce-b2b0-f28b904d1cee",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const merged = {};\nfor (const item of items) {\n  if (item.json.text) merged.text = item.json.text;\n  if (item.json.driveLink) merged.driveLink = item.json.driveLink;\n  if (item.json.chatID) merged.chatID = item.json.chatID;\n}\nreturn [{ json: merged }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1568,
+        -64
+      ],
+      "id": "6bdc8e2b-fe09-44ad-b265-6b45a036744b",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "00f1d8c1-96c1-46f7-a770-6010179b126f",
+              "name": "chatID",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2560,
+        -624
+      ],
+      "id": "75d1bc22-bf6f-4f61-9017-eafca994296a",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "chatID",
+              "field2": "output"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -848,
+        -624
+      ],
+      "id": "35f01504-4e9a-45dc-a03d-dd854aed4558",
+      "name": "Merge1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1r2n8xw22ivy93xiSPgcS6U9b1H8GuLeP",
+          "mode": "list",
+          "cachedResultName": "Invoices",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1r2n8xw22ivy93xiSPgcS6U9b1H8GuLeP"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2128,
+        544
+      ],
+      "id": "c7d6be09-24e3-4994-883a-236c0f18d90c",
+      "name": "Google Drive1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "CP2jFgI7Unfhpx1n",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81955ebd-ffdd-46a6-aa29-8fe2f7766d09",
+              "name": "driveLink",
+              "value": "={{ $json.webContentLink }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1968,
+        112
+      ],
+      "id": "d5aaddef-d9ba-447a-bfd2-e84b22ad382e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81955ebd-ffdd-46a6-aa29-8fe2f7766d09",
+              "name": "driveLink",
+              "value": "={{ $json.webContentLink }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1968,
+        544
+      ],
+      "id": "b75b7b83-d343-475d-b32d-7ffa2dde4adf",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const merged = {};\nfor (const item of items) {\n  if (item.json.content) merged.content = item.json.content;\n  if (item.json.driveLink) merged.driveLink = item.json.driveLink;\n  \n}\nreturn [{ json: merged }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        368
+      ],
+      "id": "92023e47-8fb6-4c16-a18c-91c50b669463",
+      "name": "Code1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1536,
+        368
+      ],
+      "id": "7f8708cf-55cb-4c76-9cf4-61630de98841",
+      "name": "Merge2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "VOICE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "JPG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VOICE": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JPG": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inovices": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shooping": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "09fd5b10-03fc-49df-9fd2-325c0503106e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "085070d46c962c42661609c3c6fe933c425a0d9814e91397d6453c2865b0bc17"
+  },
+  "id": "wAt3WYH4kxEFmFbR",
+  "tags": []
+}
