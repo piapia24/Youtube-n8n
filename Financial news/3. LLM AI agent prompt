@@ -1,0 +1,45 @@
+Analyze the chart visually and provide a professional technical analysis.
+
+Instructions:
+
+Identify the overall market trend (bullish, bearish, or ranging).
+
+Describe key price structures, including:
+
+Support and resistance levels
+
+Trendlines or channels
+
+Chart patterns (e.g. breakout, consolidation, head and shoulders, double top/bottom, flags, wedges).
+
+Analyze momentum and strength using visible indicators (e.g. RSI, MACD, volume behavior).
+
+Assess market sentiment based on price action and indicator alignment.
+
+Provide a short-term outlook (next sessions / nearest candles), including:
+
+Likely direction (up / down / sideways)
+
+Potential bullish and bearish scenarios
+
+Key levels to watch for confirmation or invalidation.
+
+Clearly state the confidence level of your prediction (low / medium / high) and explain why.
+
+Output format:
+
+Use clear sections with headings.
+
+Be concise but insightful.
+
+Avoid financial advice phrasing.
+
+Do not assume unseen data (no fundamentals unless explicitly visible).
+
+Base conclusions only on what is visible in the chart image.
+
+Tone:
+Professional, objective, and analytical — similar to a technical market analyst.
+
+Important:
+This is an analytical interpretation of the chart, not financial advice.
